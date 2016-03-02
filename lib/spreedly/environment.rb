@@ -110,6 +110,16 @@ module Spreedly
       self.new("", "").gateway_options
     end
 
+    def add_bank_account(options)
+      api_post(add_payment_method_url, add_bank_account_body(options), false)
+    end
+
+    def update_bank_account(bank_account_token, options)
+      body = update_bank_account_body(options)
+      xml_doc = ssl_put(update_payment_method_url(bank_account_token), body, headers)
+      PaymentMethod.new_from(xml_doc)
+    end
+
     def add_gateway(gateway_type, options = {})
       credentials = options[:credentials] || {}
       body = add_gateway_body(gateway_type, options[:description], credentials)
@@ -227,6 +237,25 @@ module Spreedly
             add_to_doc(doc, credential, :name, :value, :safe)
           end
         end
+      end
+    end
+
+    def add_bank_account_body(options)
+      build_xml_request('payment_method') do |doc|
+        add_to_doc(doc, options, :data, :retained, :email)
+        doc.bank_account do
+          add_to_doc(doc, options, :bank_routing_number, :bank_account_number,
+                    :bank_account_type, :bank_account_holder_type, :full_name,
+                    :first_name, :last_name)
+        end
+      end
+    end
+
+    def update_bank_account_body(options)
+      build_xml_request('payment_method') do |doc|
+        add_to_doc(doc, options, :email, :data, :bank_routing_number, :bank_account_number,
+                  :bank_account_type, :bank_account_holder_type, :full_name,
+                  :first_name, :last_name)
       end
     end
 
