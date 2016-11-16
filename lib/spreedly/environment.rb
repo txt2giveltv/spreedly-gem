@@ -120,7 +120,16 @@ module Spreedly
       PaymentMethod.new_from(xml_doc)
     end
 
-    def add_gateway(gateway_type, options = {})
+    def receiver_options
+      xml_doc = ssl_get(receiver_options_url, headers)
+      ReceiverClass.new_list_from(xml_doc)
+    end
+
+    def self.receiver_options
+      self.new("", "").receiver_options
+    end
+
+    def add_gateway(gateway_type, credentials = {})
       credentials = options[:credentials] || {}
       body = add_gateway_body(gateway_type, options[:description], credentials)
       xml_doc = ssl_post(add_gateway_url, body, headers)
