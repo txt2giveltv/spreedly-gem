@@ -110,6 +110,10 @@ module Spreedly
       self.new("", "").gateway_options
     end
 
+    def add_apple_pay(options)
+      api_post(add_payment_method_url, add_apple_pay_body(options), false)
+    end
+
     def add_bank_account(options)
       api_post(add_payment_method_url, add_bank_account_body(options), false)
     end
@@ -129,7 +133,7 @@ module Spreedly
       self.new("", "").receiver_options
     end
 
-    def add_gateway(gateway_type, credentials = {})
+    def add_gateway(gateway_type, options = {})
       credentials = options[:credentials] || {}
       body = add_gateway_body(gateway_type, options[:description], credentials)
       xml_doc = ssl_post(add_gateway_url, body, headers)
@@ -246,6 +250,27 @@ module Spreedly
             add_to_doc(doc, credential, :name, :value, :safe)
           end
         end
+      end
+    end
+
+    def add_apple_pay_body(options)
+      build_xml_request('payment_method') do |doc|
+        doc.apple_pay do
+          apple_pay = options[:apple_pay]
+          doc.payment_data do
+            payment_data = apple_pay[:payment_data]
+            add_to_doc(doc, payment_data, :version, :data, :signature)
+            doc.header do
+              header = payment_data[:header]
+              add_to_doc(doc, header, :ephemeralPublicKey, :transactionId,
+                         :publicKeyHash)
+            end
+          end
+          add_to_doc(doc, apple_pay, :test_card_number)
+        end
+        add_to_doc(doc, options, :retained, :email)
+        add_to_doc(doc, options, :first_name, :last_name, :address1,
+                  :address2, :city, :state, :zip, :country)
       end
     end
 
