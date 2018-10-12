@@ -239,6 +239,7 @@ module Spreedly
     def store_body(payment_method_token, options)
       build_xml_request('transaction') do |doc|
         doc.payment_method_token(payment_method_token)
+        add_to_doc(doc, options, :retained)
         add_gateway_specific_fields(doc, options)
       end
     end
