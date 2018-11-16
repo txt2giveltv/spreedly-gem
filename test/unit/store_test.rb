@@ -43,11 +43,12 @@ class StoreTest < Test::Unit::TestCase
 
   def test_request_body_params
     body = get_request_body(successful_store_response) do
-      @environment.store_on_gateway("TheGatewayToken", "TheCardToken")
+      @environment.store_on_gateway("TheGatewayToken", "TheCardToken", currency_code: "CAD")
     end
 
     transaction = body.xpath('./transaction')
     assert_xpaths_in transaction, [ './payment_method_token', 'TheCardToken' ]
+    assert_xpaths_in transaction, [ './currency_code', 'CAD' ]
   end
 
 
